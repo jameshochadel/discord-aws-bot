@@ -4,6 +4,8 @@ import os
 
 from botocore.exceptions import ClientError
 
+UNKNOWN_ERROR_MESSAGE = "😭 I experienced an unknown error while trying to execute that command!"
+
 client = discord.Client()
 
 
@@ -25,12 +27,19 @@ async def on_message(message):
 
     if message.content.startswith("/mc on"):
         await message.channel.send("🚀 Under way, captain")
-        response = instance_on()
-        await message.channel.send(response)
+
+        try:
+            response = instance_on()
+            await message.channel.send(response)
+        except Exception as e:
+            message.channel.send(UNKNOWN_ERROR_MESSAGE)
 
     if message.content.startswith("/mc off"):
-        response = instance_off()
-        await message.channel.send(response)
+        try:
+            response = instance_off()
+            await message.channel.send(response)
+        except Exception as e:
+            message.channel.send(UNKNOWN_ERROR_MESSAGE)
 
 
 def _get_instance():
@@ -49,8 +58,8 @@ def instance_off() -> str:
     if state == "stopped":
         return "😵 Server is already off!"
     else:
-        result = instance.stop(DryRun=dry_run)
-        return f"😴 Turned off server. Good night!"
+        result = instance.stop()
+        return "😴 Turned off server. Good night!"
 
 
 def instance_on() -> str:
@@ -66,7 +75,7 @@ def instance_on() -> str:
         return "🏃‍♂️ Server is starting up!"
     else:
         return "🛑 Server was not started. Instance status must be 'stopped';"\
-        f" instead, was {state}"
+        f" instead, was {state}. Try again in a minute?"
 
 
 if __name__ == "__main__":
